@@ -486,7 +486,11 @@ cipForm.init = function(form, credentialFields) {
 	if(!form.data("cipForm-initialized") && credentialFields.password) {
 		form.data("cipForm-initialized", true);
 		cipForm.setInputFields(form, credentialFields);
-		form.submit(cipForm.onSubmit);
+        var submitCallback = cipForm.onSubmit.bind(form[0]);
+        form.data("cipForm-callback", submitCallback);
+		//form.submit(submitCallback);
+        form[0].addEventListener("submit", submitCallback, true);
+        form.find("button,input[type=submit],input[type=button]").click(submitCallback);
 	}
 }
 
@@ -499,7 +503,13 @@ cipForm.destroy = function(form, credentialFields) {
     }
 
     if(form && cIPJQ(form).length > 0) {
-        cIPJQ(form).unbind('submit', cipForm.onSubmit);
+        var $form = cIPJQ(form);
+        var submitCallback = $form.data("cipForm-callback");
+        if (submitCallback) {
+            //$form.unbind('submit', submitCallback);
+            $form[0].removeEventListener("submit", submitCallback, true);
+            $form.find("button,input[type=submit],input[type=button]").unbind("click", submitCallback);
+        }
     }
 }
 
@@ -509,8 +519,12 @@ cipForm.setInputFields = function(form, credentialFields) {
 }
 
 cipForm.onSubmit = function() {
-	var usernameId = cIPJQ(this).data("cipUsername");
-	var passwordId = cIPJQ(this).data("cipPassword");
+    var $this = cIPJQ(this);
+    if ($this.data("cipSavedPassword")) {
+        return true;
+    }
+	var usernameId = $this.data("cipUsername");
+	var passwordId = $this.data("cipPassword");
 
 	var usernameValue = "";
 	var passwordValue = "";
@@ -524,8 +538,10 @@ cipForm.onSubmit = function() {
 	if(passwordField) {
 		passwordValue = passwordField.val();
 	}
-
-	cip.rememberCredentials(usernameValue, passwordValue);
+    if (usernameValue.length > 0 && usernameValue.length < 42 && passwordField.length > 0 && passwordField.length < 42) {
+        $this.data("cipSavedPassword", true);
+        cip.rememberCredentials(usernameValue, passwordValue);
+    }
 };
 
 
