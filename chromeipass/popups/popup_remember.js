@@ -1,46 +1,44 @@
-var _tab;
-
-function _initialize(tab) {
-	_tab = tab;
-
+function _initialize(passwordSaved) {
+    debugger;
 	// no credentials set or credentials already cleared
-	if(!_tab.credentials.username) {
+	if(!passwordSaved.username) {
 		_close();
 		return;
 	}
 
 	// no existing credentials to update --> disable update-button
-	if(_tab.credentials.list.length == 0) {
+	if(passwordSaved.list.length == 0) {
 		$("#btn-update").attr("disabled", true).removeClass("b2c-btn-warning");
 	}
 
-	var url = _tab.credentials.url;
+	var url = passwordSaved.url;
 	url = (url.length > 50) ? url.substring(0, 50) + "..." : url;
 	$(".information-url:first span:first").text(url);
-	$(".information-username:first span:first").text(_tab.credentials.username);
+	$(".information-username:first span:first").text(passwordSaved.username);
 
 	$("#btn-new").click(function(e) {
 		chrome.extension.sendMessage({
 			action: 'add_credentials',
-			args: [_tab.credentials.username, _tab.credentials.password, _tab.credentials.url]
+			args: [passwordSaved.username, passwordSaved.password, passwordSaved.url]
 		}, _verifyResult);
+        _close();
 	});
 
 	$("#btn-update").click(function(e) {
 		e.preventDefault();
 
 		// only one entry which could be updated
-		if(_tab.credentials.list.length == 1) {
+		if(passwordSaved.list.length == 1) {
 			chrome.extension.sendMessage({
 				action: 'update_credentials',
-				args: [_tab.credentials.list[0].Uuid, _tab.credentials.username, _tab.credentials.password, _tab.credentials.url]
+				args: [passwordSaved.list[0].Uuid, passwordSaved.username, passwordSaved.password, passwordSaved.url]
 			}, _verifyResult);
 		}
 		else {
-			$(".credentials:first .username-new:first strong:first").text(_tab.credentials.username);
-			$(".credentials:first .username-exists:first strong:first").text(_tab.credentials.username);
+			$(".credentials:first .username-new:first strong:first").text(passwordSaved.username);
+			$(".credentials:first .username-exists:first strong:first").text(passwordSaved.username);
 
-			if(_tab.credentials.usernameExists) {
+			if(passwordSaved.usernameExists) {
 				$(".credentials:first .username-new:first").hide();
 				$(".credentials:first .username-exists:first").show();
 			}
@@ -49,20 +47,21 @@ function _initialize(tab) {
 				$(".credentials:first .username-exists:first").hide();
 			}
 
-			for(var i = 0; i < _tab.credentials.list.length; i++) {
+			for(var i = 0; i < passwordSaved.list.length; i++) {
 				var $a = $("<a>")
 					.attr("href", "#")
-					.text(_tab.credentials.list[i].Login + " (" + _tab.credentials.list[i].Name + ")")
+					.text(passwordSaved.list[i].Login + " (" + passwordSaved.list[i].Name + ")")
 					.data("entryId", i)
 					.click(function(e) {
 						e.preventDefault();
 						chrome.extension.sendMessage({
 							action: 'update_credentials',
-							args: [_tab.credentials.list[$(this).data("entryId")].Uuid, _tab.credentials.username, _tab.credentials.password, _tab.credentials.url]
+							args: [passwordSaved.list[$(this).data("entryId")].Uuid, passwordSaved.username, passwordSaved.password, passwordSaved.url]
 						}, _verifyResult);
+                        _close();
 					});
 
-				if(_tab.credentials.usernameExists && _tab.credentials.username == _tab.credentials.list[i].Login) {
+				if(passwordSaved.usernameExists && passwordSaved.username == passwordSaved.list[i].Login) {
 					$a.css("font-weight", "bold");
 				}
 
@@ -97,15 +96,15 @@ function _verifyResult(code) {
 }
 
 function _close() {
-	chrome.extension.sendMessage({
-		action: 'remove_credentials_from_tab_information'
-	});
+	//chrome.extension.sendMessage({
+	//	action: 'remove_credentials_from_tab_information'
+	//});
 
-	chrome.extension.sendMessage({
-		action: 'pop_stack'
-	});
+	//chrome.extension.sendMessage({
+	//	action: 'pop_stack'
+	//});
 
-	close();
+	window.close();
 }
 
 $(function() {
@@ -115,7 +114,7 @@ $(function() {
 	});
 
 	chrome.extension.sendMessage({
-		action: 'get_tab_information'
+		action: 'get_saved_password'
 	}, _initialize);
 
 	chrome.extension.sendMessage({

@@ -1669,10 +1669,15 @@ cip.rememberCredentials = function(usernameValue, passwordValue) {
 			}
 		}
 
-		chrome.extension.sendMessage({
-			'action': 'set_remember_credentials',
-			'args': [usernameValue, passwordValue, url, usernameExists, credentialsList]
-		});
+		//chrome.extension.sendMessage({
+		//	'action': 'set_remember_credentials',
+		//	'args': [usernameValue, passwordValue, url, usernameExists, credentialsList]
+		//});
+        
+        chrome.extension.sendMessage({
+            'action': 'set_saved_password',
+            'args': [usernameValue, passwordValue, url, usernameExists, credentialsList]
+        })
 
 		return true;
 	}

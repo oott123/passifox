@@ -214,6 +214,22 @@ event.onMultipleFieldsPopup = function(callback, tab) {
 	browserAction.show(null, tab);
 }
 
+var LOGINS = {};
+event.onSavePassword = function(callback, tab, usernameValue, passwordValue, url, usernameExists, credentialsList) {
+    LOGINS = {
+		"username": usernameValue,
+		"password": passwordValue,
+		"url": url,
+		"usernameExists": usernameExists,
+		"list": credentialsList
+	};
+    window.open("popups/popup_remember.html", "_blank", "height=260,width=340,top=200,left=400");
+}
+event.onGetSavedPassword = function(callback) {
+    callback(LOGINS);
+    LOGINS = {};
+}
+
 
 // all methods named in this object have to be declared BEFORE this!
 event.messageHandlers = {
@@ -240,5 +256,7 @@ event.messageHandlers = {
 	'stack_add': browserAction.stackAdd,
 	'update_available_keepasshttp': event.onUpdateAvailableKeePassHttp,
 	'generate_password': keepass.generatePassword,
-	'copy_password': keepass.copyPassword
+	'copy_password': keepass.copyPassword,
+    'set_saved_password': event.onSavePassword,
+    'get_saved_password': event.onGetSavedPassword
 };
